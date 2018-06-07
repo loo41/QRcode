@@ -31,9 +31,9 @@ class Info {
          * 
          */
 
-        this.versionInfo[{codeTotal: 26, errorGrade: [
+        this.versionInfo.push({codeTotal: 26, errorGrade: [
             [7, 1, [26, 19, 2]], [10, 1, [26, 16, 4]], [13, 1, [26, 13, 6]], [17, 1, [26, 9, 8]]
-        ]}]
+        ]})
     }
 
     initSign () {
@@ -116,15 +116,23 @@ class Tool extends Info {
     getSign (type) {
         return this.sign[type] 
     }
+    getCodeMath (vs, type) {
+        if (type === 'L') type = 0
+            else if (type === 'M') type = 1
+            else if (type === 'Q') type = 2
+            else type = 3
+        return this.versionInfo[vs - 1].errorGrade[type][2][0]
+    }
 }
 
 class QRcode extends Tool {
-    constructor ({data = '', version = 1}) {
+    constructor ({data = '', version = 1, correctLevel = 'L'}) {
         super()
         this.data = data                                       // 编码的数据
         this.version = version                                 // 二维码版本
         this.codeValue = ''                                    // 编码后数据
         this.strIndexVlaue = []                                // 字符转换数据
+        this.correctLevel = correctLevel                       // 纠错级别
         this.init()
     }
 
@@ -137,12 +145,10 @@ class QRcode extends Tool {
         this.codeValue += '0000'                               // 添加结束符
         let flag = this.codeValue.length % 8
         let addZros = 8 - flag
-        if (!flag) {
-            return
-        } else {
-            this.codeValue = this.codeValue.padEnd(this.codeValue.length + addZros, '0')
-        }
-
+        if (flag) this.codeValue = this.codeValue.padEnd(this.codeValue.length + addZros, '0')
+        const codeMath = this.getCodeMath(this.version, this.correctLevel) * 4
+        console.log(codeMath)
+        if (this.codeValue.length < codeMath) this.codeValue = this.codeValue.padEnd(codeMath, '1110110000010001')
     }
 
     code () {
@@ -182,3 +188,9 @@ class QRcode extends Tool {
         }
     }
 }
+
+console.log(
+    new QRcode({
+        data: 'CHANDLERGENG'
+    })
+)
